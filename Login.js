@@ -1,27 +1,29 @@
-import React, { useEffect, useReducer, useState } from "react";
+import React, { useContext, useEffect, useReducer, useState } from "react";
 import Card from "../UI/Card/Card";
 import classes from "./Login.module.css";
 import Button from "../UI/Button/Button";
+import AuthContext from "../../Context/auth-context";
+import Input from "../UI/Input/Input";
 
-const emailReducer=(state,action)=>{
-  if(action.type==='ADD_EMAIL'){
-    return {value:action.val,isVaild:action.val.includes('@')} 
+const emailReducer = (state, action) => {
+  if (action.type === "ADD_EMAIL") {
+    return { value: action.val, isVaild: action.val.includes("@") };
   }
-  if(action.type==='CHECK_EMAIL'){
-    return {value:state.value,isVaild:state.value.includes('@')} 
+  if (action.type === "CHECK_EMAIL") {
+    return { value: state.value, isVaild: state.value.includes("@") };
   }
-  return {value:'',isVaild:undefined}
+  return { value: "", isVaild: undefined };
 };
 
-const passwordReducer=(state,action)=>{
-  if(action.type==='ADD_PASSWORD'){
-    return {value:action.val,isVaild:action.val>=6};
+const passwordReducer = (state, action) => {
+  if (action.type === "ADD_PASSWORD") {
+    return { value: action.val, isVaild: action.val >= 6 };
   }
-  if(action.type==='CHECK_PASSWORD'){
-    return {value:state.value,isVaild:state.value>=6};
+  if (action.type === "CHECK_PASSWORD") {
+    return { value: state.value, isVaild: state.value >= 6 };
   }
-  return {value:'',isVaild:undefined};
-}
+  return { value: "", isVaild: undefined };
+};
 
 // const clgReducer=(state,action)=>{
 //   if(action.type==='ADD_PASSWORD'){
@@ -33,7 +35,7 @@ const passwordReducer=(state,action)=>{
 //   return {value:'',isVaild:undefined};
 // }
 
-const Login = (props) => {
+const Login = () => {
   // const [enteredEmail, setEnteredEmail] = useState("");
   // const [emailIsValid, setEmailIsValid] = useState();
   // const [enteredPassword, setEnteredPassword] = useState("");
@@ -42,30 +44,37 @@ const Login = (props) => {
   const [ClgIsValid, setCldValid] = useState();
   const [formIsValid, setFormIsValid] = useState(false);
 
-  const [emailState, dispatchEmail] = useReducer(emailReducer,{value:'',isVaild:undefined});
-  const [passwordState,dispatchPassword]=useReducer(passwordReducer,{value:'',isVaild:undefined});
+  const [emailState, dispatchEmail] = useReducer(emailReducer, {
+    value: "",
+    isVaild: undefined,
+  });
+  const [passwordState, dispatchPassword] = useReducer(passwordReducer, {
+    value: "",
+    isVaild: undefined,
+  });
+
+  const cxt = useContext(AuthContext);
+
   useEffect(() => {
     setFormIsValid(
-      emailState.isVaild &&
-        passwordState.isVaild&&
-        enteredClg.length > 3
+      emailState.isVaild && passwordState.isVaild && enteredClg.length > 3
     );
-  }, [emailState,enteredClg,passwordState]);
+  }, [emailState, enteredClg, passwordState]);
 
   const emailChangeHandler = (event) => {
-    dispatchEmail({type:'ADD_EMAIL',val:event.target.value});
+    dispatchEmail({ type: "ADD_EMAIL", val: event.target.value });
   };
 
   const passwordChangeHandler = (event) => {
-    dispatchPassword({type:'ADD_PASSWORD',val:event.target.value});
+    dispatchPassword({ type: "ADD_PASSWORD", val: event.target.value });
   };
 
   const validateEmailHandler = () => {
-    dispatchEmail({type:'CHECK_EMAIL'});
+    dispatchEmail({ type: "CHECK_EMAIL" });
   };
 
   const validatePasswordHandler = () => {
-    dispatchPassword({type:'CHECK_PASSWORD'});
+    dispatchPassword({ type: "CHECK_PASSWORD" });
   };
 
   const ClgChangeHandler = (event) => {
@@ -78,52 +87,36 @@ const Login = (props) => {
 
   const submitHandler = (event) => {
     event.preventDefault();
-    props.onLogin(emailState.value, passwordState.value);
+    cxt.onLogin(emailState.value, passwordState.value);
   };
 
   return (
     <Card className={classes.login}>
       <form onSubmit={submitHandler}>
-        <div
-          className={`${classes.control} ${
-            emailState.isVaild === false ? classes.invalid : ""
-          }`}
-        >
-          <label htmlFor="email">E-Mail</label>
-          <input
-            type="email"
-            id="email"
-            value={emailState.value}
-            onChange={emailChangeHandler}
-            onBlur={validateEmailHandler}
-          />
-        </div>
-        <div
-          className={`${classes.control} ${
-            ClgIsValid === false ? classes.invalid : ""
-          }`}
-        >
-          <label> College Name</label>
-          <input
-            type="text"
-            onChange={ClgChangeHandler}
-            onBlur={validateClgHandler}
-          ></input>
-        </div>
-        <div
-          className={`${classes.control} ${
-            passwordState.isVaild === false ? classes.invalid : ""
-          }`}
-        >
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            value={passwordState.value}
-            onChange={passwordChangeHandler}
-            onBlur={validatePasswordHandler}
-          />
-        </div>
+        <Input
+          type="email"
+          label="E-MAIL"
+          isVaild={emailState.isVaild}
+          value={emailState.value}
+          ChangeHandler={emailChangeHandler}
+          ValidHandler={validateEmailHandler}
+        />
+        <Input
+          type="input"
+          label="College Name"
+          isVaild={ClgIsValid}
+          value={enteredClg}
+          ChangeHandler={ClgChangeHandler}
+          ValidHandler={validateClgHandler}
+        />
+        <Input
+          type="password"
+          label="Password"
+          isVaild={passwordState.isVaild}
+          value={passwordState.value}
+          ChangeHandler={passwordChangeHandler}
+          ValidHandler={validatePasswordHandler}
+        />
         <div className={classes.actions}>
           <Button type="submit" className={classes.btn} disabled={!formIsValid}>
             Login
